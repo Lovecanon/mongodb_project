@@ -1,5 +1,23 @@
 # 网易云音乐评论爬虫(Scrapy+MongoDB)
 
+## 启动流程
+1. 打开Mongodb服务器， 如果没有权限验证请关闭`--auth`和`MongoUtils`配置中的`username`、`password`
+```bash
+C:\Users\liaoxiangkai>mongod --dbpath "D://Program Files/MongoDB/data" --auth
+```
+2. 启动爬虫，`settings.py`文件中设置`DEFAULT_REQUEST_HEADERS`，其他的中间件、管道根据需求
+```bash
+D:\papp\mongodb_project>scrapy crawl 163_spider
+```
+3. 打开Mongodb的shell，默认端口27017
+```bash
+C:\Users\liaoxiangkai>mongo
+> db.playlist.find().count()
+32
+> db.comment.find().count()
+1228
+```
+
 ## 爬取流程
 `start_requests()`方法获取不同口味的链接，如：国语、欧美、古典等；
 
