@@ -38,9 +38,9 @@
 { "total" : 30779, "m_name" : "Bye Bye Bye", "artists" : [ "Lovestoned" ] }
 { "total" : 27903, "m_name" : "PRICKED (MINO & TAEHYUN)", "artists" : [ "WINNER" ] }
 { "total" : 27456, "m_name" : "HOLUP!", "artists" : [ "Bobby" ] }
-
+```
 --------------------------------------
-            
+
 ## 这里是跑了几个小时的结果，可惜不带歌手信息(2017/3/2)
 
 ```bash
