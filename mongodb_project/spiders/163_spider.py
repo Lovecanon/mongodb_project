@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO,
                     handlers=[logging.StreamHandler(sys.stdout)])
 
 
-class LawSpiderSpider(scrapy.Spider):
+class MusicSpider(scrapy.Spider):
     name = "163_spider"
     allowed_domains = ["music.163.com"]
     start_urls = ['http://baidu.com/']
@@ -33,6 +33,7 @@ class LawSpiderSpider(scrapy.Spider):
     db = MongoUtils.MongoDB().db
 
     def start_requests(self):
+        # start_requests方法【必须】返回一个可迭代对象，该对象包含了spider用于爬取的第一个Request。
         return [Request('http://music.163.com/discover/playlist', callback=self.pre_get_playlist)]
 
     def pre_get_playlist(self, response):
@@ -84,6 +85,6 @@ class LawSpiderSpider(scrapy.Spider):
 
 
 runner = CrawlerRunner()
-d = runner.crawl(LawSpiderSpider)
+d = runner.crawl(MusicSpider)
 d.addBoth(lambda _: reactor.stop())
 reactor.run()

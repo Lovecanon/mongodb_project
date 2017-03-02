@@ -7,6 +7,7 @@ logging.basicConfig(level=logging.INFO,
                     datefmt='%Y-%m-%d %H:%M:%S',
                     handlers=[logging.StreamHandler(sys.stdout)])
 
+# 如果数据库设置可权限，就必须要填写username、password
 MONGODB_CONFIG = {
     'host': '127.0.0.1',
     'port': 27017,
