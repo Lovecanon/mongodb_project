@@ -1,24 +1,18 @@
-# -*- coding: utf-8 -*-
+# -*- coding:utf8 -*-
 import scrapy
-import sys
 import re
 import logging
 import json
 from scrapy.http import Request, FormRequest
 from mongodb_project import MongoUtils
-from twisted.internet import reactor
-from scrapy.crawler import CrawlerRunner
 
-logging.basicConfig(level=logging.INFO,
-                    format='+++%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    handlers=[logging.StreamHandler(sys.stdout)])
+logger = logging.getLogger(__name__)
 
 
 class MusicSpider(scrapy.Spider):
     name = "163_spider"
     allowed_domains = ["music.163.com"]
-    start_urls = ['http://baidu.com/']
+    start_urls = ['']
 
     # 163配置
     post_data = {
@@ -33,16 +27,16 @@ class MusicSpider(scrapy.Spider):
     db = MongoUtils.MongoDB().db
 
     def start_requests(self):
-        # start_requests方法【必须】返回一个可迭代对象，该对象包含了spider用于爬取的第一个Request。
+        """start_requests方法【必须】返回一个可迭代对象，该对象包含了spider用于爬取的第一个Request"""
         return [Request('http://music.163.com/discover/playlist', callback=self.pre_get_playlist)]
 
     def pre_get_playlist(self, response):
         playlist_urls = response.xpath('//dd/a[@data-cat]/@href').extract()
-        logging.info('Find %d kinds of music taste' % (len(playlist_urls)))
+        logger.info('Find %d kinds of music taste' % (len(playlist_urls)))
         for playlist_url in playlist_urls:
             for offset in range(0, self.page_num * self.limit, self.limit):
                 full_url = response.urljoin(playlist_url) + '&order=hot&limit=35&offset=' + str(offset)
-                logging.info('Getting playlist url:' + full_url)
+                logger.info('Getting playlist url:' + full_url)
                 yield Request(full_url, callback=self.in_get_playlist)
 
     def in_get_playlist(self, response):
@@ -58,7 +52,7 @@ class MusicSpider(scrapy.Spider):
         result = json.loads(response.body, encoding='utf-8')['result']
 
         # inserted = collection.update({'id': result['id']}, result, upsert=True)  # upsert=True表示insert or update
-        # logging.info('Update or Insert to playlist database[%s]' % (str(inserted),))
+        # logger.info('Update or Insert to playlist database[%s]' % (str(inserted),))
         if result['id'] not in self.playlist_id_buffer:
             collection.insert(result)
 
@@ -70,7 +64,7 @@ class MusicSpider(scrapy.Spider):
             # 使用FormRequest来进行POST登陆，或者使用下面的方式登陆
             # Request(url, method='POST', body=json.dumps(data))
             yield FormRequest(comment_url, formdata=self.post_data, callback=self.parse,
-                              meta={'m_id': song['id'],'m_name': song['name'], 'artists': artists})
+                              meta={'m_id': song['id'], 'm_name': song['name'], 'artists': artists})
 
     def parse(self, response):
         collection = self.db.comment
@@ -80,11 +74,5 @@ class MusicSpider(scrapy.Spider):
         comment_body['m_name'] = response.meta['m_name']
         comment_body['artists'] = response.meta['artists']
         collection.update({'id': music_id}, comment_body, upsert=True)
-        # logging.info('Update or Insert to Mongodb[%s]' % (str(inserted),))
+        # logger.info('Update or Insert to Mongodb[%s]' % (str(inserted),))
         yield
-
-
-runner = CrawlerRunner()
-d = runner.crawl(MusicSpider)
-d.addBoth(lambda _: reactor.stop())
-reactor.run()

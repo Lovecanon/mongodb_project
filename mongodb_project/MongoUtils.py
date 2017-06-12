@@ -2,16 +2,13 @@ from pymongo import MongoClient
 import sys
 import logging
 
-logging.basicConfig(level=logging.INFO,
-                    format='+++%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    handlers=[logging.StreamHandler(sys.stdout)])
+logger = logging.getLogger(__name__)
 
 # 如果数据库设置可权限，就必须要填写username、password
 MONGODB_CONFIG = {
     'host': '127.0.0.1',
-    'port': 27017,
-    'db': 'test',
+    'port': 27117,
+    'db': 'music',
     'username': None,
     'password': None
 }
@@ -20,7 +17,7 @@ MONGODB_CONFIG = {
 class Singleton(object):
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):
-            cls._instance = super(Singleton, cls).__new__(cls, *args)
+            cls._instance = super(Singleton, cls).__new__(cls)
         return cls._instance
 
 
@@ -33,7 +30,7 @@ class MongoDB(Singleton):
             if MONGODB_CONFIG['username'] and MONGODB_CONFIG['password']:
                 self.db.authenticate(MONGODB_CONFIG['username'], MONGODB_CONFIG['password'])
         except Exception as e:
-            logging.error(e)
+            logger.error(e)
             sys.exit(1)
 
 
